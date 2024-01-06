@@ -25,6 +25,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "../frontend/public")));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
+console.log("__dirname:", __dirname);
+console.log("Views path:", path.join(__dirname, "../Frontend/public/"));
+
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "../Frontend/public/"));
 app.use("/videos", express.static(path.join(__dirname, "./upload")));
