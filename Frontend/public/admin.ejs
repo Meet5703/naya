@@ -51,7 +51,7 @@
           <td>
             <% if (submission.VideoUpload) { %>
             <a
-              href="/videos/<%= submission.VideoUpload.split('\\').pop() %>"
+              href="/download-video/<%= path.basename(submission.VideoUpload) %>"
               target="_blank"
               download
               >Download</a
