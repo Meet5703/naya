@@ -30,12 +30,12 @@ console.log("Views path:", path.join(__dirname, "../Frontend/public/"));
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "../Frontend/public/"));
-app.use("/videos", express.static(path.join(__dirname, "backend/upload")));
+app.use("/videos", express.static(path.join(__dirname, "./upload")));
 
 // Multer setup for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "backend/upload")); // Update the destination path
+    cb(null, path.join(__dirname, "./upload")); // Update the destination path
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
