@@ -40,7 +40,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Define routes directly within app.js
-app.get("/", async (req, res) => {
+app.get("https://film-form.onrender.com", async (req, res) => {
   try {
     const submissions = await Submission.find();
     res.render("index", { submissions });
@@ -49,7 +49,7 @@ app.get("/", async (req, res) => {
     res.status(500).send("Server Error");
   }
 });
-app.get("/payment", (req, res) => {
+app.get("https://film-form.onrender.com/payment", (req, res) => {
   res.sendFile(path.join(__dirname, "../Frontend/public/payment.html"));
 });
 
@@ -75,61 +75,65 @@ app.get("/download-video/:filename", (req, res) => {
   }
 });
 
-app.post("/submit", upload.single("VideoUpload"), async (req, res) => {
-  console.log("Received POST request at /submit");
-  try {
-    // Retrieve form data
-    const {
-      Name,
-      FatherName,
-      MotherName,
-      Address,
-      email,
-      ActingRole,
-      MobileNumber,
-      WhatsAppNumber,
-    } = req.body;
+app.post(
+  "https://film-form.onrender.com/submit",
+  upload.single("VideoUpload"),
+  async (req, res) => {
+    console.log("Received POST request at /submit");
+    try {
+      // Retrieve form data
+      const {
+        Name,
+        FatherName,
+        MotherName,
+        Address,
+        email,
+        ActingRole,
+        MobileNumber,
+        WhatsAppNumber,
+      } = req.body;
 
-    // Validate if any required fields are missing
-    const requiredFields = [
-      Name,
-      FatherName,
-      MotherName,
-      Address,
-      email,
-      ActingRole,
-      MobileNumber,
-      WhatsAppNumber,
-    ];
-    if (requiredFields.some((field) => !field)) {
-      return res.status(400).send("Missing required fields");
+      // Validate if any required fields are missing
+      const requiredFields = [
+        Name,
+        FatherName,
+        MotherName,
+        Address,
+        email,
+        ActingRole,
+        MobileNumber,
+        WhatsAppNumber,
+      ];
+      if (requiredFields.some((field) => !field)) {
+        return res.status(400).send("Missing required fields");
+      }
+
+      // Create a new Submission object
+      const newSubmission = new Submission({
+        Name,
+        FatherName,
+        MotherName,
+        Address,
+        email,
+        ActingRole,
+        MobileNumber,
+        WhatsAppNumber,
+        VideoUpload: req.file ? req.file.path : null,
+      });
+
+      // Save the submission to the database
+      const savedSubmission = await newSubmission.save();
+
+      console.log("Submission saved:", savedSubmission);
+      res.redirect("https://film-form.onrender.com/payment");
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Server Error");
     }
-
-    // Create a new Submission object
-    const newSubmission = new Submission({
-      Name,
-      FatherName,
-      MotherName,
-      Address,
-      email,
-      ActingRole,
-      MobileNumber,
-      WhatsAppNumber,
-      VideoUpload: req.file ? req.file.path : null,
-    });
-
-    // Save the submission to the database
-    const savedSubmission = await newSubmission.save();
-
-    console.log("Submission saved:", savedSubmission);
-    res.redirect("/payment");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server Error");
   }
-});
+);
 
-app.get("/admin", async (req, res) => {
+app.get("https://film-form.onrender.com/admin", async (req, res) => {
   try {
     // Fetch submissions data (assuming this logic fetches data from the database)
     const submissions = await Submission.find(); // Fetch submissions data from MongoDB or any other database
