@@ -134,7 +134,7 @@ app.post("/submit", (req, res) => {
         ActingRole,
         MobileNumber,
         WhatsAppNumber,
-        VideoUpload: req.file ? req.file.path : null,
+        VideoUpload: req.file ? req.file.filename : null,
       });
 
       // Save the submission to the database
