@@ -48,7 +48,7 @@ const upload = multer({ storage: storage });
 app.get("/", async (req, res) => {
   try {
     const submissions = await Submission.find();
-    res.render("index", { submissions });
+    res.sendFile(path.join(__dirname, "../Frontend/public/index.html"));
   } catch (error) {
     console.error(error);
     res.status(500).send("Server Error");
@@ -59,24 +59,25 @@ app.get("/payment", (req, res) => {
 });
 
 app.get("/download-video/:filename", (req, res) => {
-  const videoFilename = req.params.filename;
-  const videoPath = path.join(__dirname, "upload", videoFilename);
+  try {
+    const videoFilename = req.params.filename;
+    const videoPath = path.join(__dirname, "upload", videoFilename);
 
-  // Check if the file exists
-  if (fs.existsSync(videoPath)) {
-    // Set appropriate headers for video download
-    res.setHeader(
-      "Content-disposition",
-      "attachment; filename=" + videoFilename
-    );
-    res.setHeader("Content-type", "video/mp4");
+    if (fs.existsSync(videoPath)) {
+      res.setHeader(
+        "Content-disposition",
+        "attachment; filename=" + videoFilename
+      );
+      res.setHeader("Content-type", "video/mp4");
 
-    // Stream the video file to the response
-    const videoStream = fs.createReadStream(videoPath);
-    videoStream.pipe(res);
-  } else {
-    // If file not found, send a 404 response
-    res.status(404).send("Video not found");
+      const videoStream = fs.createReadStream(videoPath);
+      videoStream.pipe(res);
+    } else {
+      res.status(404).send("Video not found");
+    }
+  } catch (error) {
+    console.error("Error downloading video:", error);
+    res.status(500).send("Error downloading video");
   }
 });
 
