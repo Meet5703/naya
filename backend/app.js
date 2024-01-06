@@ -38,11 +38,12 @@ const storage = multer.diskStorage({
     cb(null, path.join(__dirname, "./upload")); // Update the destination path
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + "-" + file.originalname); // Use a unique filename
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ storage: storage }).single("VideoUpload");
 
 // Define routes directly within app.js
 app.get("/", async (req, res) => {
@@ -81,58 +82,71 @@ app.get("/download-video/:filename", (req, res) => {
   }
 });
 
-app.post("/submit", upload.single("VideoUpload"), async (req, res) => {
-  console.log("Received POST request at /submit");
-  try {
-    // Retrieve form data
-    const {
-      Name,
-      FatherName,
-      MotherName,
-      Address,
-      email,
-      ActingRole,
-      MobileNumber,
-      WhatsAppNumber,
-    } = req.body;
-
-    // Validate if any required fields are missing
-    const requiredFields = [
-      Name,
-      FatherName,
-      MotherName,
-      Address,
-      email,
-      ActingRole,
-      MobileNumber,
-      WhatsAppNumber,
-    ];
-    if (requiredFields.some((field) => !field)) {
-      return res.status(400).send("Missing required fields");
+app.post("/submit", (req, res) => {
+  upload(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      // Multer error handling
+      console.error(err);
+      return res.status(500).send("Multer error occurred");
+    } else if (err) {
+      // Other errors
+      console.error(err);
+      return res.status(500).send("Error occurred during file upload");
     }
 
-    // Create a new Submission object
-    const newSubmission = new Submission({
-      Name,
-      FatherName,
-      MotherName,
-      Address,
-      email,
-      ActingRole,
-      MobileNumber,
-      WhatsAppNumber,
-      VideoUpload: req.file ? req.file.path : null,
-    });
+    // If file upload is successful, handle other form data
+    try {
+      // Retrieve form data except for the video
+      const {
+        Name,
+        FatherName,
+        MotherName,
+        Address,
+        email,
+        ActingRole,
+        MobileNumber,
+        WhatsAppNumber,
+      } = req.body;
 
-    // Save the submission to the database
-    const savedSubmission = await newSubmission.save();
+      // Validate if any required fields are missing
+      const requiredFields = [
+        Name,
+        FatherName,
+        MotherName,
+        Address,
+        email,
+        ActingRole,
+        MobileNumber,
+        WhatsAppNumber,
+      ];
 
-    console.log("Submission saved:", savedSubmission);
-    res.redirect("/payment");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server Error");
-  }
+      if (requiredFields.some((field) => !field)) {
+        return res.status(400).send("Missing required fields");
+      }
+
+      // Create a new Submission object
+      const newSubmission = new Submission({
+        Name,
+        FatherName,
+        MotherName,
+        Address,
+        email,
+        ActingRole,
+        MobileNumber,
+        WhatsAppNumber,
+        VideoUpload: req.file ? req.file.path : null,
+      });
+
+      // Save the submission to the database
+      const savedSubmission = await newSubmission.save();
+
+      console.log("Submission saved:", savedSubmission);
+      res.redirect("/payment");
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Server Error");
+    }
+  });
 });
 
 app.get("/admin", async (req, res) => {
