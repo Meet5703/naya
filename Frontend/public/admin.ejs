@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Admin Panel</title>
+    <title>phonepe</title>
     <style>
       table {
         border-collapse: collapse;
@@ -51,7 +51,7 @@
           <td>
             <% if (submission.VideoUpload) { %>
             <a
-              href="/download-video/<%= path.basename(submission.VideoUpload) %>"
+              href="/videos/<%= submission.VideoUpload.split('\\').pop() %>"
               target="_blank"
               download
               >Download</a
