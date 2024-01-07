@@ -45,6 +45,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage }).single("VideoUpload");
 
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).send("Server Error");
+});
+
 // Define routes directly within app.js
 app.get("/", async (req, res) => {
   try {
