@@ -53,16 +53,20 @@ const indexController = require("./controllers/indexController");
 const paymentController = require("./controllers/paymentController");
 const downloadController = require("./controllers/downloadController");
 const submitController = require("./controllers/submitController");
+const adminController = require("./controllers/adminController");
 
 app.use("/", indexController);
 app.use("/payment", paymentController);
 app.use("/download-video", downloadController);
-app.use(
+
+// Use multer middleware for /submit route
+app.post(
   "/submit",
-  submitController(
-    multer({ storage: storage }).single("VideoUpload"),
-    Submission
-  )
+  multer({ storage: storage }).single("VideoUpload"),
+  (req, res) => {
+    // Change 'next' to 'res'
+    submitController(upload, Submission)(req, res);
+  }
 );
 
 app.use(errorHandler);
