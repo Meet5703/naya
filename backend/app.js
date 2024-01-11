@@ -1,30 +1,14 @@
-// app.js
 const express = require("express");
 const mongoose = require("mongoose");
+const path = require("path");
+const fs = require("fs");
+const Submission = require("./models/submission");
 const multer = require("multer");
 const cors = require("cors");
-const compression = require("compression");
-const fs = require("fs").promises;
-const Submission = require("./models/submission");
 
-const path = require("path");
 require("dotenv").config();
 
-const errorHandler = require("./middleware/errorHandler");
-
 const app = express();
-const router = require("express-promise-router")();
-
-// Define storage for multer
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "./upload"));
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
-  }
-});
 
 // MongoDB connection
 mongoose
@@ -35,42 +19,155 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err.message));
 
-app.use(cors());
-app.use(compression());
+// Middleware and static file serving setup
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(
-  express.static(path.join(__dirname, "../frontend/public"), {
-    maxAge: 31557600000
-  })
-); // 1 year cache
-app.use(
-  express.static(path.join(__dirname, "public"), { maxAge: 31557600000 })
-); // 1 year cache
+app.use(express.static(path.join(__dirname, "../frontend/public")));
+app.use(express.static(path.join(__dirname, "public")));
+app.use(cors());
+console.log("__dirname:", __dirname);
+console.log("Views path:", path.join(__dirname, "../Frontend/public/"));
 
-// Routes
-const indexController = require("./controllers/indexController");
-const paymentController = require("./controllers/paymentController");
-const downloadController = require("./controllers/downloadController");
-const submitController = require("./controllers/submitController");
-const adminController = require("./controllers/adminController");
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "../Frontend/public/"));
+app.use("/videos", express.static(path.join(__dirname, "./upload")));
 
-app.use("/", indexController);
-app.use("/payment", paymentController);
-app.use("/download-video", downloadController);
-
-// Use multer middleware for /submit route
-app.post(
-  "/submit",
-  multer({ storage: storage }).single("VideoUpload"),
-  (req, res) => {
-    // Change 'next' to 'res'
-    submitController(upload, Submission)(req, res);
+// Multer setup for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, "./upload")); // Update the destination path
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + "-" + file.originalname); // Use a unique filename
   }
-);
+});
 
-app.use(errorHandler);
+const upload = multer({ storage: storage }).single("VideoUpload");
 
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).send("Server Error");
+});
+
+// Define routes directly within app.js
+app.get("/", async (req, res) => {
+  try {
+    const submissions = await Submission.find();
+    res.sendFile(path.join(__dirname, "../Frontend/public/index.html"));
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server Error");
+  }
+});
+app.get("/payment", (req, res) => {
+  res.sendFile(path.join(__dirname, "../Frontend/public/payment.html"));
+});
+
+app.get("/download-video/:filename", (req, res) => {
+  try {
+    const videoFilename = req.params.filename;
+    const videoPath = path.join(__dirname, "upload", videoFilename);
+
+    if (fs.existsSync(videoPath)) {
+      res.setHeader(
+        "Content-disposition",
+        "attachment; filename=" + videoFilename
+      );
+      res.setHeader("Content-type", "video/mp4");
+
+      const videoStream = fs.createReadStream(videoPath);
+      videoStream.pipe(res);
+    } else {
+      res.status(404).send("Video not found");
+    }
+  } catch (error) {
+    console.error("Error downloading video:", error);
+    res.status(500).send("Error downloading video");
+  }
+});
+
+app.post("/submit", (req, res) => {
+  upload(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      // Multer error handling
+      console.error(err);
+      return res.status(500).send("Multer error occurred");
+    } else if (err) {
+      // Other errors
+      console.error(err);
+      return res.status(500).send("Error occurred during file upload");
+    }
+
+    // If file upload is successful, handle other form data
+    try {
+      // Retrieve form data except for the video
+      const {
+        Name,
+        FatherName,
+        MotherName,
+        Address,
+        email,
+        ActingRole,
+        MobileNumber,
+        WhatsAppNumber
+      } = req.body;
+
+      // Validate if any required fields are missing
+      const requiredFields = [
+        Name,
+        FatherName,
+        MotherName,
+        Address,
+        email,
+        ActingRole,
+        MobileNumber,
+        WhatsAppNumber
+      ];
+
+      if (requiredFields.some((field) => !field)) {
+        return res.status(400).send("Missing required fields");
+      }
+
+      // Create a new Submission object
+      const newSubmission = new Submission({
+        Name,
+        FatherName,
+        MotherName,
+        Address,
+        email,
+        ActingRole,
+        MobileNumber,
+        WhatsAppNumber,
+        VideoUpload: req.file ? req.file.filename : null
+      });
+
+      // Save the submission to the database
+      const savedSubmission = await newSubmission.save();
+
+      console.log("Submission saved:", savedSubmission);
+      res.redirect("/payment");
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Server Error");
+    }
+  });
+});
+
+app.get("/admin", async (req, res) => {
+  try {
+    // Fetch submissions data (assuming this logic fetches data from the database)
+    const submissions = await Submission.find(); // Fetch submissions data from MongoDB or any other database
+
+    // Render admin.ejs and pass submissions data to the template
+    res.render("admin", { submissions }); // Pass submissions data to the admin.ejs template
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server Error");
+  }
+});
+
+// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
