@@ -14,7 +14,51 @@
       header li:hover {
         text-shadow: 0 0 3px cyan, 0 0 4px cyan, 0 0 6px cyan;
       }
+      .vacancy-container {
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+  background: #000;
+  white-space: nowrap; /* Prevent text from wrapping to the next line */
+}
 
+.animated-text {
+  flex: 1;
+  text-align: center;
+  animation: moveLeft 30s linear infinite, changeColor 10s linear infinite;
+}
+
+@keyframes moveLeft {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes changeColor {
+  0% {
+    color: rgb(0, 255, 200);
+    text-shadow: 0 0 5px rgb(0, 255, 200);
+  }
+  25% {
+    color: rgb(0, 238, 255);
+    text-shadow: 0 0 5px rgb(0, 225, 255);
+  }
+  50% {
+    color: rgb(0, 255, 0);
+    text-shadow: 0 0 5px rgb(0, 255, 0);
+  }
+  75% {
+    color: rgb(251, 255, 0);
+    text-shadow: 0 0 5px rgb(255, 251, 0);
+  }
+  100% {
+    color: rgb(255, 0, 255);
+    text-shadow: 0 0 5px rgb(250, 2, 217);
+  }
+}
       body {
         background-repeat: no-repeat;
         background-size: cover;
@@ -41,6 +85,9 @@
   </head>
   <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
+      <div class="vacancy-container mt-4 md:mt-6 space-x-8">
+      <h1 class="animated-text text-xl md:text-3xl"> Please Note This is Temporary website Submit Form and pay via qr code or bank transfer after submission take ss of form and payment and send it to whatsapp no. +91 88535 18482 after this steps Your application will accept</h1>
+    </div>
     <header class="mb-2 bg-gradient-to-r from-[#4b7bc4] to-[#4b93af]">
       <div
         class="relative flex max-w-screen-xl flex-col overflow-hidden px-4 py-4 md:mx-auto md:flex-row md:items-center"
@@ -135,7 +182,7 @@
         <!-- Item 3 -->
         <div class="hidden duration-700 ease-in-out" data-carousel-item>
           <img
-            src="https://scontent.fixk1-1.fna.fbcdn.net/v/t39.30808-6/240156542_596537455091683_8655560699599937396_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=783fdb&_nc_ohc=0WV1ChLLXEUAX9THfKH&_nc_ht=scontent.fixk1-1.fna&oh=00_AfDJtrQG1MlgO_o_1HS0gIxrNnB0_YT7grR5dID6HpNu9A&oe=659C72FF"
+            src="https://img.nowrunning.com/content/movie/2018/kgf-23542/bg.jpg"
             class="absolute hidden md:block w-[1080px] -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
             alt="..."
           />
@@ -266,10 +313,11 @@
         </span>
       </button>
     </div>
-<div class="p-10 ml-[22px] rounded-lg shadow relative md:w-[80%] mx-auto lg:w-[75%]" style="backdrop-filter: blur(10px); background-color: rgba(255, 255, 255, 0.26);">
-  <form action="https://eifpe-auditionb.onrender.com/submit" method="POST" enctype="multipart/form-data">
+<div class="md:flex w-full  justify-around p-10 ml-[22px] rounded-lg shadow relative md:w-[80%] mx-auto lg:w-[75%]" style="backdrop-filter: blur(10px); background-color: rgba(255, 255, 255, 0.26);">
+
+  <form class=" " action="https://eifpe-auditionb.onrender.com/submit" method="POST" enctype="multipart/form-data">
     <div class="w-full flex items-center absolute top-0 left-6 justify-center">
-      <h1 class="font-semibold text-xl">Apply Now</h1>
+      <h1 class="font-semibold text-3xl">Apply Now</h1>
     </div>
     <div class="mb-5">
       <label for="Name" class="block mb-2 font-bold ">Name</label>
@@ -391,6 +439,32 @@
 
     <button class="block w-full bg-blue-500 text-white font-bold p-4 rounded-lg">Submit</button>
   </form>
+  <div class=" bg-blue-300 md:w-1/2 rounded-lg flex p-6 h-fit flex-col gap-5 items-center justify-evenly">
+    <h1 class="text-4xl font-bold">Pay Here </h1>
+    <div class="flex flex-col items-center justify-evenly md:flex-row md:flex md:justify-between w-full">
+
+      <div class="w-1/2"  >
+
+        <img  src="./assets/qr.jpg" alt="qr code">
+      </div>
+      <div class=" ">
+        <h1 class="text-3xl">For Bank Transfer</h1>
+        <h2 class="text-2xl">
+          Account number
+        </h2>
+            3372294752
+            <div>
+  
+              <h2 class="text-2xl">
+    
+                IFSC Code -
+              </h2>
+              SBIN0008069
+            </div>
+  
+      </div>
+    </div>
+  </div>
 </div>
 
    </div>
